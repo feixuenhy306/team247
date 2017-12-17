@@ -1,27 +1,12 @@
 /**
  * Created by jacksoft on 16/10/22.
  */
-function getData($page,$pageSize){//获取数据，可使用各种语言替换^_^
-    var $data = [];
-    for (var $i=($page-1)*$pageSize+1; $i <=$page*$pageSize ; $i++) {
-        $data.push( {
-            id:$i,
-            name:'name'+$i
-        });
-    }
-
-//        if(result){
-//            data = result
-//        }
-
-    var $returnData = {'data':$data,'total':103};
-    return $returnData;
-}
-
 window.vm = new Vue({
 	el:'#app',
 	data:{
 		showModal:false,
+        showEditModal:false,
+        showDelModal:false,
 		productList:[],
 		totalMoney:0,
 		checkAll:false,
@@ -128,27 +113,72 @@ window.vm = new Vue({
 			var index = this.productList.indexOf(this.currentProduct);
 			this.productList.splice(index,1);
 
-			console.log(this.$refs.name.value);
             $.ajax({
                type: 'POST',
                url: "/addProduct",
-               data: {name: this.$refs.name.value,discription: this.$refs.description.value,price: this.$refs.price.value},
+               data: {name: this.$refs.name.value,description: this.$refs.description.value,price: this.$refs.price.value},
                success: function (res) {
-
+                   window.location = "/";
                }
             });
 		},
-        listItems: function () {//列出需要的数据
-            var returnData =getData(this.page,this.pageSize);
-            this.listData = returnData.data;
-            this.total=returnData['total'];
-            this.setPageList(this.total, this.page, this.pageSize);
+        editCurrentProduct: function () {
+            this.showEditModal = false;
+            var that = this,$id = this.$refs.id.value,$name = this.$refs.nameEdit.value,$descriptionEdit = this.$refs.descriptionEdit.value,$price = this.$refs.priceEdit.value;
+            $.ajax({
+                type: 'POST',
+                url: "/updateProduct",
+                data: {id: this.$refs.id.value,name: this.$refs.nameEdit.value,discription: this.$refs.descriptionEdit.value,price: this.$refs.priceEdit.value},
+                success: function (res) {
+                    that.listData.forEach(function (item) {
+                        if($id){
+                            if(item.id == $id){
+                                item.name = $name;
+                                item.descriptionEdit = $descriptionEdit;
+                                item.price = $price;
+                            }
+                        }
+
+                    })
+                }
+            });
         },
-        editItem:function ($id) {//编辑操作在这儿哟
-            alert('编辑第'+$id+'条数据！');
+        delCurrentProduct: function () {
+            this.showDelModal = false;
+            var that = this
+            $.ajax({
+                type: 'GET',
+                url: "/delProduct?id=" + that.$refs.id.value,
+                success: function (res) {
+                    window.location="/"
+                }
+            });
+        },
+        listItems: function () {//列出需要的数据
+            var that = this
+            $.ajax({
+                url: "/products",
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                success: function (res) {
+                    var returnData = {'data':res,'total':103};
+                    that.listData = returnData.data;
+                    that.total=returnData['total'];
+                    that.setPageList(this.total, this.page, this.pageSize);
+                }
+            });
+        },
+        editItem:function ($id,$name,$price,$description) {//编辑操作在这儿哟
+            this.showEditModal = true;
+            this.$refs.id.value = $id;
+            this.$refs.nameEdit.value = $name;
+            this.$refs.priceEdit.value = $price;
+            this.$refs.descriptionEdit.value = $description;
         },
         deleteItem:function ($id) {//这里可以删除数据
-            alert('删除第'+$id+'条数据！');
+            this.showDelModal = true;
+            this.$refs.id.value = $id;
         },
         setPageList: function (total, page, pageSize) {
             total = parseInt(total);
@@ -208,3 +238,8 @@ window.vm = new Vue({
         }
 	}
 });
+
+window.onload = function(){
+    console.log('Hello World!');
+    vm.listItems();
+};
