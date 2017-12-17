@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <title>产品列表</title>
+  <link href="http://v3.bootcss.com/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/base2.css" rel="stylesheet">
+  <link href="/static/css/checkout.css" rel="stylesheet">
+  <link href="/static/css/modal.css" rel="stylesheet">
+  <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body class="checkout">
+<div id="app">
+  <div class="container">
+    <div class="pd-add">
+        <a href="javascript:;" class="btn-sm btn--red" @click.stop="delConfirm()" >添加</a>
+    </div>
+    <div class="bs-example" id="table">
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>名称</th>
+          <th>价格</th>
+          <th>描述</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-if="listData.length>0"  v-for="item in listData">
+          <th scope="row">{{item.id}}</th>
+          <td>{{item.name}}</td>
+          <td>
+            <button v-on:click="editItem(item.id)" class="btn btn-default" >编辑</button>
+            <button v-on:click="deleteItem(item.id)" class="btn btn-default" >删除</button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan=3>
+            <div id="pagelist">
+              <div class="row">
+                <div class="col-sm-6" style="line-height: 80px">
+                  <div class="dataTables_info" id="sample-table-2_info">
+                    共{{pageData.total}}条，当前显示第
+                    <span v-if="pageData.pageSize==1 || pageData.total == 0 || pageData.total == 1">
+                                                {{pageData.itemStart}}</span>
+                    <span v-else>{{pageData.itemStart}}-{{pageData.itemEnd}}</span>
+                    条
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="dataTables_paginate paging_bootstrap">
+                    <ul class="pagination">
+                      <li v-if="pageData.curPage == 1 || pageData.total == 0 || pageData.total == 1" class="prev disabled">
+                        <a>首页</a>
+                      </li>
+                      <li v-else class="prev">
+                        <a href="javascript:void(0)" v-on:click="changeCurPage(1,pageData.pageSize);">
+                          首页
+                        </a>
+                      </li>
+                      <li v-if="pageData.curPage == 1 || pageData.total == 0 || pageData.total == 1" class="prev disabled">
+                        <a>上一页</a>
+                      </li>
+                      <li v-else class="prev">
+                        <a href="javascript:void(0)" v-on:click="changeCurPage(pageData.curPage-1,pageData.pageSize);">
+                          上一页</i>
+                        </a>
+                      </li>
+                      <li v-if="pageData.totalPage > 5 && pageData.curPage > 3" class="next disabled">
+                        <a>...</a>
+                      </li>
+                      <template v-for="pageItem in pageData.pageIndex">
+                        <li v-if="pageData.curPage == pageItem" class="active">
+                          <a>{{pageItem}}</a>
+                        </li>
+                        <li v-else>
+                          <a href="javascript:void(0)" v-on:click="changeCurPage(pageItem,pageData.pageSize);">
+                            {{pageItem}}
+                          </a>
+                        </li>
+                      </template>
+                      <li v-if="pageData.totalPage > 5 && pageData.curPage < pageData.totalPage-2" class="next disabled">
+                        <a>...</a>
+                      </li>
+                      <li v-if="pageData.curPage == pageData.totalPage || pageData.total == 0 || pageData.total == 1" class="next disabled">
+                        <a><i>下一页</i></a>
+                      </li>
+                      <li v-else class="next">
+                        <a href="javascript:void(0)" v-on:click="changeCurPage(pageData.curPage+1,pageData.pageSize);">
+                          <i>下一页</i>
+                        </a>
+                      </li>
+                      <li v-if="pageData.curPage == pageData.totalPage || pageData.total == 0 || pageData.total == 1" class="next disabled">
+                        <a>末页</a>
+                      </li>
+                      <li v-else class="next">
+                        <a href="javascript:void(0)" v-on:click="changeCurPage(pageData.totalPage,pageData.pageSize);">
+                          末页
+                        </a>
+                      </li>
+                      <template v-if="pageData.totalPage > 5" class="next disabled">
+                        <li>
+                          <input value="" ref="goPage" class="input-mini" type="text" style="height: 32px;width:40px;margin:auto 5px auto 20px;line-height: 24px;">
+                          <label><a href="javascript:void(0)" v-on:click="goPage(pageData.pageSize,pageData.totalPage)">Go</a></label>
+                        </li>
+                      </template>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        <tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="md-modal modal-msg md-modal-transition" id="showModal" v-bind:class="{'md-show':showModal}" @click.stop="">
+    <div class="md-modal-inner">
+      <div class="md-top">
+        <button class="md-close" @click="showModal=false;">关闭</button>
+      </div>
+      <div class="md-content">
+          <div class="confirm-tips">
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">产品</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" ref="name"  placeholder="产品">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">价格</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" ref="price"  placeholder="价格">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">描述</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" ref="description" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="btn-wrap col-2">
+            <button class="btn btn--m" type="submit" id="btnModalConfirm" @click="addCurrentProduct">添加</button>
+            <button class="btn btn--m btn--red" id="btnModalCancel" @click="showModal=false;">取消</button>
+          </div>
+      </div>
+    </div>
+  </div>
+  <div class="md-overlay" id="showOverLay" v-show="showModal"></div>
+</div>
+<script src="/static/js/lib/vue2.min.js"></script>
+<script src="/static/js/lib/vue-resource.min.js"></script>
+<script src="/static/js/cart.js"></script>
+<script type="text/javascript">
+
+
+
+//    var vm = new Vue({
+//        el: '#table',
+//        data: {
+//            listData:[],
+//            page: 1,//当前页码
+//            pageSize: 10,//每页条数
+//            total:0,//总数
+//            pageData: {
+//                curPage: 1,
+//                pageSize: 10,
+//                total: 0,
+//                totalPage: 0,
+//                pageIndex: [],
+//                itemStart: 0,
+//                itemEnd: 0
+//            }
+//        },
+//        methods:{
+//
+//        }
+//    });
+//
+//    window.onload = function(){
+//        console.log('Hello World!');
+//        vm.listItems();
+//    };
+</script>
+</body>
+</html>

@@ -5,55 +5,40 @@ const estic = require('./../lib/elasticClient.js');
 
 const Product = {}
 
-Product.findOne = function (id, cb) {
-    db.query('select * from t_product where id = ?', [id], function(err, results) {
-        if(results == null || results.length == 0) {
-            err = Error('empty')
-        }
-        cb(err, results)
-    })
+Product.findOne = async function (id) {
+    //  db.query('select * from t_product where id = $1', [id], function (err, results) {
+    //     if (results == null || results.length == 0) {
+    //         err = Error('empty')
+    //     }
+    //     cb(err, results)
+    // })
+    var res = await db.query('select * from t_product where id = $1', [id])
 
+    return res.rows
     //Mock Scripts
     // const product = {"id": 1, "username" : "test", "password" : "test"}
     // cb(null, product)
 
 }
 
-Product.findList = function (cb) {
-    db.query('select * from t_product',function (err,results) {
-        if(results == null || results.length == 0){
-            err = Error('empty')
-        }
-        cb(err,results)
-    })
+Product.findList = async function () {
+    var res = await db.query('select * from t_product')
+    return res.rows
 }
 
-Product.insert = function (obj,cb) {
-    db.query('insert into t_product(name,description,price) values(?,?,?)', [obj.name,obj.description,obj.price], function(err, results) {
-        console.log(err)
-        if(results == null || results.length == 0) {
-            err = Error('empty')
-        }
-        cb(err, results)
-    })
+Product.insert = async function (obj) {
+    var res = await db.query('insert into t_product(name,description,price) values($1,$2,$3)', [obj.name,obj.description,obj.price])
+    return res
 }
 
-Product.update = function (obj,cb) {
-    db.query('update t_product set name=?,description=?,price=?', [obj.name,obj.description,obj.price], function(err, results) {
-        if(results == null || results.length == 0) {
-            err = Error('empty')
-        }
-        cb(err, results)
-    })
+Product.update = async function (obj) {
+    var res = await db.query('update t_product set name=$1,description=$2,price=$3',[obj.name,obj.description,obj.price])
+    return res
 }
 
-Product.delete = function (id,cb) {
-    db.query('delete from t_product where id=?', [id], function(err, results) {
-        if(results == null || results.length == 0) {
-            err = Error('empty')
-        }
-        cb(err, results)
-    })
+Product.delete = async function (id) {
+    var res = await db.query('delete from t_product where id=?', [id])
+    return res
 }
 
 Product.verify = async function(username, password) {
