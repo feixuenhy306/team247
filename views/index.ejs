@@ -30,9 +30,11 @@
         <tr v-if="listData.length>0"  v-for="item in listData">
           <th scope="row">{{item.id}}</th>
           <td>{{item.name}}</td>
+          <td>{{item.price}}</td>
+          <td>{{item.description}}</td>
           <td>
-            <button v-on:click="editItem(item.id)" class="btn btn-default" >编辑</button>
-            <button v-on:click="deleteItem(item.id)" class="btn btn-default" >删除</button>
+            <button v-on:click="editItem(item.id)" class="btn-sm btn-default" >编辑</button>
+            <button v-on:click="deleteItem(item.id)" class="btn-sm btn-default" >删除</button>
           </td>
         </tr>
         <tr>
@@ -40,13 +42,13 @@
             <div id="pagelist">
               <div class="row">
                 <div class="col-sm-6" style="line-height: 80px">
-                  <div class="dataTables_info" id="sample-table-2_info">
-                    共{{pageData.total}}条，当前显示第
-                    <span v-if="pageData.pageSize==1 || pageData.total == 0 || pageData.total == 1">
-                                                {{pageData.itemStart}}</span>
-                    <span v-else>{{pageData.itemStart}}-{{pageData.itemEnd}}</span>
-                    条
-                  </div>
+                  <!--<div class="dataTables_info" id="sample-table-2_info">-->
+                    <!--共{{pageData.total}}条，当前显示第-->
+                    <!--<span v-if="pageData.pageSize==1 || pageData.total == 0 || pageData.total == 1">-->
+                                                <!--{{pageData.itemStart}}</span>-->
+                    <!--<span v-else>{{pageData.itemStart}}-{{pageData.itemEnd}}</span>-->
+                    <!--条-->
+                  <!--</div>-->
                 </div>
                 <div class="col-sm-6">
                   <div class="dataTables_paginate paging_bootstrap">
