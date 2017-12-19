@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml"
+      xmlns:v-validate="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8">
   <title>产品列表</title>
@@ -13,7 +14,13 @@
 <div id="app">
   <div class="container">
     <div class="pd-add">
-        <a href="javascript:;" class="btn-sm btn--red" @click.stop="delConfirm()" >添加</a>
+        <a href="javascript:;" class="btn-sm btn--red" style="float: left" @click.stop="delConfirm()" >添加</a>
+      <form class="navbar-form navbar-left" style="float: right;margin-left: 200px;margin-top: -2px;">
+        <div class="form-group">
+          <input type="text" class="form-control" ref="search" placeholder="名称">
+        </div>
+        <button class="btn-sm btn-default" type="button" v-on:click="searchItems()" >搜索</button>
+      </form>
     </div>
     <div class="bs-example" id="table">
       <table class="table table-striped">
@@ -33,7 +40,7 @@
           <td>{{item.price}}</td>
           <td>{{item.description}}</td>
           <td>
-            <button v-on:click="editItem(item.id)" class="btn-sm btn-default" >编辑</button>
+            <button v-on:click="editItem(item.id,item.name,item.price,item.description)" class="btn-sm btn-default" >编辑</button>
             <button v-on:click="deleteItem(item.id)" class="btn-sm btn-default" >删除</button>
           </td>
         </tr>
@@ -123,31 +130,91 @@
       <div class="md-top">
         <button class="md-close" @click="showModal=false;">关闭</button>
       </div>
+      <form class="form-horizontal">
       <div class="md-content">
           <div class="confirm-tips">
             <div class="form-group">
               <label for="inputEmail3" class="col-sm-2 control-label">产品</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" ref="name"  placeholder="产品">
+                <input type="text" class="form-control" v-validate="'required|name'" :class="{'input': true, 'is-danger': errors.has('name') }" name="name"  ref="name"  placeholder="产品">
               </div>
+              <span v-show="errors.has('name')" class="help is-danger">{{ errors.first('name') }}</span>
             </div>
             <div class="form-group">
               <label for="inputEmail3" class="col-sm-2 control-label">价格</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" ref="price"  placeholder="价格">
+                <input type="text" class="form-control" v-validate="'decimal|price'" :class="{'input':true,'is-danger': errors.has('price')}" name="price" ref="price"  placeholder="价格">
               </div>
+              <span v-show="errors.has('price')" class="help is-danger">{{ errors.first('price') }}</span>
             </div>
             <div class="form-group">
               <label for="inputEmail3" class="col-sm-2 control-label">描述</label>
               <div class="col-sm-10">
-                <textarea class="form-control" ref="description" rows="3"></textarea>
+                <textarea class="form-control" ref="description" v-validate="'required|description'" :class="{'input': true, 'is-danger': errors.has('description') }" name="description"  rows="3"></textarea>
               </div>
+              <span v-show="errors.has('description')" class="help is-danger">{{ errors.first('description') }}</span>
             </div>
           </div>
           <div class="btn-wrap col-2">
-            <button class="btn btn--m" type="submit" id="btnModalConfirm" @click="addCurrentProduct">添加</button>
-            <button class="btn btn--m btn--red" id="btnModalCancel" @click="showModal=false;">取消</button>
+            <button class="btn-sm btn-left btn--red" type="submit" id="btnModalConfirm" @click="addCurrentProduct">添加</button>
+            <button class="btn-sm btn-right btn--red" id="btnModalCancel" @click="showModal=false;">取消</button>
           </div>
+      </div>
+      </form>
+    </div>
+  </div>
+  <div class="md-modal modal-msg md-modal-transition" id="showEditModal" v-bind:class="{'md-show':showEditModal}" @click.stop="">
+    <div class="md-modal-inner">
+      <div class="md-top">
+        <button class="md-close" @click="showEditModal=false;">关闭</button>
+      </div>
+      <div class="md-content">
+        <form class="form-horizontal">
+        <div class="confirm-tips">
+          <input type="hidden" ref="id">
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">产品</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" v-validate="'required|name'" :class="{'input': true, 'is-danger': errors.has('name') }" name="name"  ref="nameEdit"  placeholder="产品">
+            </div>
+            <span v-show="errors.has('name')" class="help is-danger">{{ errors.first('name') }}</span>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">价格</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" v-validate="'decimal|price'" :class="{'input':true,'is-danger': errors.has('price')}" name="price" ref="priceEdit"  placeholder="价格">
+            </div>
+            <span v-show="errors.has('price')" class="help is-danger">{{ errors.first('price') }}</span>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">描述</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" ref="descriptionEdit" v-validate="'required|description'" :class="{'input': true, 'is-danger': errors.has('description') }" name="description"  rows="3"></textarea>
+            </div>
+            <span v-show="errors.has('description')" class="help is-danger">{{ errors.first('description') }}</span>
+          </div>
+        </div>
+        <div class="btn-wrap col-2">
+          <button class="btn-sm btn-left btn--red" type="submit" id="btnModalConfirm" @click="editCurrentProduct">编辑</button>
+          <button class="btn-sm btn-right btn--red" id="btnModalCancel" @click="showEditModal=false;">取消</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="md-modal modal-msg md-modal-transition" id="showDelModal" v-bind:class="{'md-show':showDelModal}" @click.stop="">
+    <div class="md-modal-inner">
+      <div class="md-top">
+        <button class="md-close" @click="showDelModal=false;">关闭</button>
+      </div>
+      <div class="md-content">
+        <div class="confirm-tips">
+          <p id="cusLanInfo" lan="Cart.Del.Confirm">你确认删除此产品信息吗?</p>
+        </div>
+        <div class="btn-wrap col-2">
+          <button class="btn-sm btn-left btn--red" id="btnModalConfirm" @click="delCurrentProduct">是</button>
+          <button class="btn-sm btn-right btn--red" id="btnModalCancel" @click="showDelModal=false;">否</button>
+        </div>
       </div>
     </div>
   </div>
@@ -155,37 +222,7 @@
 </div>
 <script src="/static/js/lib/vue2.min.js"></script>
 <script src="/static/js/lib/vue-resource.min.js"></script>
-<script src="/static/js/cart.js"></script>
-<script type="text/javascript">
-
-
-
-//    var vm = new Vue({
-//        el: '#table',
-//        data: {
-//            listData:[],
-//            page: 1,//当前页码
-//            pageSize: 10,//每页条数
-//            total:0,//总数
-//            pageData: {
-//                curPage: 1,
-//                pageSize: 10,
-//                total: 0,
-//                totalPage: 0,
-//                pageIndex: [],
-//                itemStart: 0,
-//                itemEnd: 0
-//            }
-//        },
-//        methods:{
-//
-//        }
-//    });
-//
-//    window.onload = function(){
-//        console.log('Hello World!');
-//        vm.listItems();
-//    };
-</script>
+<script src="/static/js/lib/vee-validate.js"></script>
+<script src="/static/js/index.js"></script>
 </body>
 </html>

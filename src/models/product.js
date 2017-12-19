@@ -6,39 +6,48 @@ const estic = require('./../lib/elasticClient.js');
 const Product = {}
 
 Product.findOne = async function (id) {
-    //  db.query('select * from t_product where id = $1', [id], function (err, results) {
-    //     if (results == null || results.length == 0) {
-    //         err = Error('empty')
-    //     }
-    //     cb(err, results)
-    // })
-    var res = await db.query('select * from t_product where id = $1', [id])
-
+    let res = await db.query('select * from t_product where id = $1', [id])
     return res.rows
-    //Mock Scripts
-    // const product = {"id": 1, "username" : "test", "password" : "test"}
-    // cb(null, product)
-
 }
 
 Product.findList = async function () {
-    var res = await db.query('select * from t_product')
+    let res = await db.query('select * from t_product order by id asc')
     return res.rows
 }
 
 Product.insert = async function (obj) {
-    var res = await db.query('insert into t_product(name,description,price) values($1,$2,$3)', [obj.name,obj.description,obj.price])
+    let res = await db.query('insert into t_product(name,description,price) values($1,$2,$3)', [obj.name,obj.description,obj.price])
     return res
 }
 
 Product.update = async function (obj) {
-    var res = await db.query('update t_product set name=$1,description=$2,price=$3',[obj.name,obj.description,obj.price])
+    let res = await db.query('update t_product set name=$1,description=$2,price=$3 where id=$4',[obj.name,obj.description,obj.price,obj.id])
     return res
 }
 
 Product.delete = async function (id) {
-    var res = await db.query('delete from t_product where id=?', [id])
+    let res = await db.query('delete from t_product where id=$1', [id])
     return res
+}
+
+Product.search = async function (info) {
+   let result = []
+   let res = await estic.search({
+        index: 'products',
+        size: 20,
+        body: {
+            query: {
+                match: {
+                    name:{
+                        query: info
+                    }
+                }
+            }
+        }
+    })
+
+    result.push(res.hits.hits[0]._source)
+    return result
 }
 
 Product.verify = async function(username, password) {

@@ -44,3 +44,5 @@ app
 src/config/*
 !src/config/index.js
 !src/config/default.js.idea
+/node_modules
+/.idea

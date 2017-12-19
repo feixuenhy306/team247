@@ -1,6 +1,17 @@
 /**
  * Created by jacksoft on 16/10/22.
  */
+const config = {
+    errorBagName: 'errors', // change if property conflicts.
+    delay: 0,
+    locale: 'zh_CN',
+    messages: null,
+    events: 'input|blur',
+    strict: true
+};
+
+Vue.use(VeeValidate,config);
+
 window.vm = new Vue({
 	el:'#app',
 	data:{
@@ -164,6 +175,22 @@ window.vm = new Vue({
                 success: function (res) {
                     var returnData = {'data':res,'total':103};
                     that.listData = returnData.data;
+                    that.total=returnData['total'];
+                    that.setPageList(this.total, this.page, this.pageSize);
+                }
+            });
+        },
+        searchItems: function () {
+            var that = this
+            $.ajax({
+                url: "/searchProduct?info=" + that.$refs.search.value,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                success: function (res) {
+                    var returnData = {'data':res,'total':103};
+                    that.listData = returnData.data;
+                    console.log(that.listData)
                     that.total=returnData['total'];
                     that.setPageList(this.total, this.page, this.pageSize);
                 }
